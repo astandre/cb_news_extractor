@@ -1,0 +1,19 @@
+language: python
+os: linux
+python: 3.7
+env:
+  - TOX_ENV=py37
+  - TOX_ENV=docs
+install:
+  - pip install tox
+script:
+  - tox -e $TOX_ENV
+
+jobs:
+  include:
+    - stage: build docker image
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker build -t cb_news_extractor --build-arg var_name $FB_TOKEN . -f docker/Dockerfile
+        - docker tag cb_news_extractor $DOCKER_USERNAME/cb_news_extractor
+        - docker push $DOCKER_USERNAME/cb_news_extractor

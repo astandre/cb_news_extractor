@@ -1,0 +1,42 @@
+version: "3"
+volumes:
+  news-db:
+
+
+networks:
+  newsbot-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+
+
+services:
+  news_extractor:
+    restart: always
+    image: astandre/news_extractor
+    container_name: news_extractor
+    ports:
+      - "5000:8000"
+    links:
+      - news-db
+      - intents-managment
+    networks:
+      kbsbot-net:
+        ipv4_address: 172.28.1.2
+
+  news-db:
+    image: mysql:5.7
+    container_name: news-db
+    restart: always
+    ports:
+      - "32000:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - newsbot-net
