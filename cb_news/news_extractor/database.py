@@ -10,8 +10,8 @@ class Noticia(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.String(80), nullable=False)
     message = db.Column(db.String(400), nullable=False)
-    permalink_url = db.Column(db.String(200), unique=True, nullable=False)
-    full_picture = db.Column(db.String(200), unique=True, nullable=True)
+    permalink_url = db.Column(db.Text, unique=True, nullable=False)
+    full_picture = db.Column(db.Text, unique=True, nullable=True)
     shares = db.Column(db.Integer, nullable=True)
     extracted_time = db.Column(db.DateTime, default=datetime.now())
     # This fields need approval

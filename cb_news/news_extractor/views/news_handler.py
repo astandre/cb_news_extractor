@@ -18,6 +18,7 @@ def index():
 def extract_news():
     noticias = get_posts()
     cont_not = 0
+    print(noticias)
     if len(noticias) > 0:
         for noticia in noticias:
             # print(noticia)
