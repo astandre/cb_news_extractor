@@ -31,15 +31,18 @@ services:
       - newsbot-net
 
   news-db:
-    image: orchardup/mysql
-    container_name: news-db
+    image: postgres
+    container_name: news_db
     restart: always
     ports:
-      - "32000:3306"
+      - "5432:5432"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: news
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_HOST: news_db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: news
     volumes:
-      - news-db:/var/lib/mysql
+      - news-db:/var/lib/postgresql
     networks:
       - newsbot-net
