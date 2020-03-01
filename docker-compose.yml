@@ -11,33 +11,34 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.28.0.0/16
+        - subnet: 172.30.0.0/16
 
 
 services:
   news_extractor:
     restart: always
-    image: astandre/news_extractor
-    container_name: news_extractor
+    image: astandre/cb_news_extractor
+    container_name: cb_news_extractor
     ports:
       - "5000:8000"
     environment:
-      - FB_TOKEN=mongodb-interactions
+      - FB_TOKEN=
     links:
       - news-db
-      - intents-managment
+    depends_on:
+      - news-db
     networks:
-      kbsbot-net:
-        ipv4_address: 172.28.1.2
+      - newsbot-net
 
   news-db:
-    image: mysql:5.7
+    image: mysql
     container_name: news-db
     restart: always
     ports:
       - "32000:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: news
     volumes:
       - news-db:/var/lib/mysql
     networks:
