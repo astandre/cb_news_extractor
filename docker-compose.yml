@@ -31,7 +31,7 @@ services:
       - newsbot-net
 
   news-db:
-    image: mysql
+    image: orchardup/mysql
     container_name: news-db
     restart: always
     ports:
