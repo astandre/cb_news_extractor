@@ -21,6 +21,8 @@ services:
     container_name: news_extractor
     ports:
       - "5000:8000"
+    environment:
+      - FB_TOKEN=mongodb-interactions
     links:
       - news-db
       - intents-managment
@@ -37,6 +39,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - ./db:/docker-entrypoint-initdb.d/:ro
+      - news-db:/var/lib/mysql
     networks:
       - newsbot-net

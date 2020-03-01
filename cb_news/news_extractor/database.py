@@ -27,9 +27,9 @@ def get_or_create_news(new_noticia):
     if noticia_exists is None:
         db.session.add(new_noticia)
         db.session.commit()
-        return new_noticia
+        return True
     else:
-        return noticia_exists
+        return False
 
 
 def get_all_saved_news():
