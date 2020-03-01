@@ -2,4 +2,4 @@ requests
 flask
 flask_sqlalchemy
 -e git+https://github.com/Runnerly/flakon.git#egg=flakon
-mysql-python
+PyMySQL==0.9.3
