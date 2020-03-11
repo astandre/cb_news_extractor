@@ -15,20 +15,6 @@ networks:
 
 
 services:
-  news_extractor:
-    restart: always
-    image: astandre/cb_news_extractor
-    container_name: cb_news_extractor
-    ports:
-      - "5000:8000"
-    environment:
-      - FB_TOKEN=
-    links:
-      - news-db
-    depends_on:
-      - news-db
-    networks:
-      - newsbot-net
 
   news-db:
     image: postgres
@@ -46,3 +32,19 @@ services:
       - news-db:/var/lib/postgresql
     networks:
       - newsbot-net
+
+  news_extractor:
+    restart: always
+    image: astandre/cb_news_extractor
+    container_name: cb_news_extractor
+    ports:
+      - "5000:8000"
+    environment:
+      - FB_TOKEN=
+    depends_on:
+      - news-db
+    links:
+      - news-db
+    networks:
+      - newsbot-net
+
