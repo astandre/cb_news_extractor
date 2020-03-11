@@ -1,8 +1,15 @@
 from flakon import JsonBlueprint
 from cb_news.news_extractor.services import *
 from cb_news.news_extractor.database import *
+from cb_news.news_extractor.utils import *
+import logging
 
 news_handler = JsonBlueprint('news_handler', __name__)
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 
 @news_handler.route('/')
@@ -17,15 +24,18 @@ def index():
 @news_handler.route('/extract/news', methods=["GET"])
 def extract_news():
     noticias = get_posts()
+    logger.info("Retrieving posts  %s", len(noticias))
     cont_not = 0
+    cont = 0
     print(noticias)
     if len(noticias) > 0:
         for noticia in noticias:
             # print(noticia)
             new_noticia = get_post(noticia["id"])
             print(new_noticia)
+            logger.info("Appending post  %s", new_noticia)
             if new_noticia["is_published"]:
-                if "message" in new_noticia:
+                if "message" in new_noticia and classify_post(new_noticia["message"]):
                     new_notic_obj = Noticia(post_id=new_noticia["id"],
                                             message=new_noticia["message"],
                                             permalink_url=new_noticia["permalink_url"],
@@ -39,8 +49,10 @@ def extract_news():
 
                     if get_or_create_news(new_notic_obj):
                         cont_not += 1
+                    else:
+                        cont += 1
 
-    message = f"news found: {cont_not}"
+    message = f"news found: {cont_not}\nnews updated: {cont}"
 
     return {"message": message}
 
@@ -53,6 +65,11 @@ def get_all_news():
 @news_handler.route('/today/news', methods=["GET"])
 def get_today_news():
     return {"news": get_today_news_db()}
+
+
+@news_handler.route('/today/story', methods=["GET"])
+def get_today_story_view():
+    return {"news": get_todays_story()}
 
 # @news_handler.route('/top/today/news', methods=["GET"])
 # def get_top_today_news():

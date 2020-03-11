@@ -1,8 +1,15 @@
 from flakon import JsonBlueprint
 from cb_news.news_extractor.database import *
 from flask import request
+import logging
 
 report_handler = JsonBlueprint('report_handler', __name__)
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
 
 
 @report_handler.route('/report', methods=["POST"])
@@ -12,6 +19,7 @@ def report_view():
     This view will return an empty JSON mapping.
     """
     data = request.get_json()
+    logger.info("Appending new report  %s", data)
     new_report = Report()
 
     if "id" in data:

@@ -5,8 +5,6 @@ db = SQLAlchemy()
 
 
 class Noticia(db.Model):
-    """Agent
-    """
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.String(80), nullable=False)
     message = db.Column(db.String(400), nullable=False)
@@ -14,6 +12,7 @@ class Noticia(db.Model):
     full_picture = db.Column(db.Text, unique=True, nullable=True)
     shares = db.Column(db.Integer, nullable=True, default=0)
     extracted_time = db.Column(db.DateTime, default=datetime.now())
+    todays_story = db.Column(db.Boolean, default=False)
     # This fields need approval
     reactions = db.Column(db.String(80), nullable=True)
     likes = db.Column(db.String(80), nullable=True)
@@ -64,7 +63,7 @@ def get_or_create_report(new_report):
         db.session.commit()
         return new_report
     else:
-        report_exists.message = new_report.author
+        report_exists.author = new_report.author
         db.session.commit()
         return report_exists
 
@@ -86,7 +85,7 @@ def get_all_saved_reports():
 
 
 def get_all_saved_news():
-    noticias = Noticia.query.all()
+    noticias = Noticia.query.filter_by(todays_story=False).all()
     result = []
     for noticia in noticias:
         # print(noticia)
@@ -106,7 +105,7 @@ def get_today_news_db():
     todays_datetime = datetime.today() - timedelta(days=1)
     # print(todays_datetime)
     noticias = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
-        Noticia.extracted_time).limit(5).all()
+        Noticia.extracted_time).filter_by(todays_story=False).limit(5).all()
     result = []
     for noticia in noticias:
         result.append({
@@ -118,3 +117,10 @@ def get_today_news_db():
             "extracted_time": noticia.extracted_time
         })
     return result
+
+
+def get_todays_story():
+    todays_datetime = datetime.today() - timedelta(days=1)
+    t_story = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
+        Noticia.extracted_time).filter_by(todays_story=False).first()
+    return t_story
