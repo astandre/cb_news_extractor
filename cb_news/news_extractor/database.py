@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 
+from cb_news.news_extractor.utils import find_urls, clean_input, find_tag
+
 db = SQLAlchemy()
 
 
@@ -8,11 +10,13 @@ class Noticia(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.String(80), nullable=False)
     message = db.Column(db.String(400), nullable=False)
-    permalink_url = db.Column(db.Text, unique=True, nullable=False)
+    fb_url = db.Column(db.Text, unique=True, nullable=False)
     full_picture = db.Column(db.Text, unique=True, nullable=True)
     shares = db.Column(db.Integer, nullable=True, default=0)
     extracted_time = db.Column(db.DateTime, default=datetime.now())
     todays_story = db.Column(db.Boolean, default=False)
+    internal_url = db.Column(db.Text, unique=True, nullable=True)
+    # noticia_tipo = db.Column(db.String(50), nullable=False)
     # This fields need approval
     reactions = db.Column(db.String(80), nullable=True)
     likes = db.Column(db.String(80), nullable=True)
@@ -44,12 +48,23 @@ class Attachment(db.Model):
 
 def get_or_create_news(new_noticia):
     noticia_exists = Noticia.query.filter_by(post_id=new_noticia.post_id).first()
+    urls = find_urls(new_noticia.message)
+    tag = find_tag(new_noticia.message)
     if noticia_exists is None:
+        if len(urls) > 0:
+            new_noticia.internal_url = urls[0]
+        if tag is not None:
+            print(f"TAG found! {tag}")
+        new_noticia.message = clean_input(new_noticia.message)
         db.session.add(new_noticia)
         db.session.commit()
         return True
     else:
-        noticia_exists.message = new_noticia.message
+        if len(urls) > 0:
+            noticia_exists.internal_url = urls[0]
+        if tag is not None:
+            print(f"TAG found! {tag}")
+        noticia_exists.message = clean_input(new_noticia.message)
         noticia_exists.shares = new_noticia.shares
         noticia_exists.full_picture = new_noticia.full_picture
         db.session.commit()
@@ -59,10 +74,12 @@ def get_or_create_news(new_noticia):
 def get_or_create_report(new_report):
     report_exists = Report.query.filter_by(id=new_report.id).first()
     if report_exists is None:
+        new_report.message = clean_input(new_report.description)
         db.session.add(new_report)
         db.session.commit()
         return new_report
     else:
+        report_exists.description = clean_input(new_report.description)
         report_exists.author = new_report.author
         db.session.commit()
         return report_exists
@@ -92,7 +109,8 @@ def get_all_saved_news():
         result.append({
             "post_id": noticia.post_id,
             "message": noticia.message,
-            "permalink_url": noticia.permalink_url,
+            "fb_url": noticia.fb_url,
+            "internal_url": noticia.internal_url,
             "full_picture": noticia.full_picture,
             "shares": noticia.shares,
             "extracted_time": noticia.extracted_time
@@ -101,9 +119,7 @@ def get_all_saved_news():
 
 
 def get_today_news_db():
-    # todays_datetime = datetime(datetime.today().year, datetime.today().month, datetime.today().day - 1)
     todays_datetime = datetime.today() - timedelta(days=1)
-    # print(todays_datetime)
     noticias = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
         Noticia.extracted_time).filter_by(todays_story=False).limit(5).all()
     result = []
@@ -111,7 +127,8 @@ def get_today_news_db():
         result.append({
             "post_id": noticia.post_id,
             "message": noticia.message,
-            "permalink_url": noticia.permalink_url,
+            "fb_url": noticia.fb_url,
+            "internal_url": noticia.internal_url,
             "full_picture": noticia.full_picture,
             "shares": noticia.shares,
             "extracted_time": noticia.extracted_time
@@ -123,11 +140,15 @@ def get_todays_story():
     todays_datetime = datetime.today() - timedelta(days=1)
     t_story = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
         Noticia.extracted_time).filter_by(todays_story=False).first()
-    return {
+    if t_story is not None:
+        return {
             "post_id": t_story.post_id,
             "message": t_story.message,
-            "permalink_url": t_story.permalink_url,
+            "fb_url": t_story.fb_url,
+            "internal_url": t_story.internal_url,
             "full_picture": t_story.full_picture,
             "shares": t_story.shares,
             "extracted_time": t_story.extracted_time
         }
+    else:
+        return None
