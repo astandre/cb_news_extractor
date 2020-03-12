@@ -123,4 +123,11 @@ def get_todays_story():
     todays_datetime = datetime.today() - timedelta(days=1)
     t_story = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
         Noticia.extracted_time).filter_by(todays_story=False).first()
-    return t_story
+    return {
+            "post_id": t_story.post_id,
+            "message": t_story.message,
+            "permalink_url": t_story.permalink_url,
+            "full_picture": t_story.full_picture,
+            "shares": t_story.shares,
+            "extracted_time": t_story.extracted_time
+        }

@@ -52,7 +52,7 @@ def extract_news():
                     else:
                         cont += 1
 
-    message = f"news found: {cont_not}\nnews updated: {cont}"
+    message = f"news found: {cont_not} \nnews updated: {cont}"
 
     return {"message": message}
 
