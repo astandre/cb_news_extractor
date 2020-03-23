@@ -6,7 +6,7 @@ def classify_post(post):
 
 
 def find_urls(raw_input):
-    regex_url = re.compile("https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+")
+    regex_url = re.compile(r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+")
     url = regex_url.findall(raw_input)
     return url
 
