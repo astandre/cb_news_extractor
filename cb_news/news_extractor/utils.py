@@ -2,7 +2,16 @@ import re
 
 
 def classify_post(post):
-    return True
+    print('Clasifiying ', post)
+    tag = find_tag(post)
+    print('Tag ', tag)
+    resp = ''
+    if '[Pᴜʙʟɪᴄɪᴅᴀᴅ]' in post:
+        resp = 'publicidad'
+
+    if tag == '#MásHistoriasQueContar':
+        resp = 'historia'
+    return resp
 
 
 def find_urls(raw_input):

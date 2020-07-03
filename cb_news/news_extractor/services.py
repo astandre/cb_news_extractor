@@ -2,6 +2,7 @@ import requests
 import os
 
 TOKEN = os.environ.get("FB_TOKEN")
+# TOKEN = ''
 
 BASE_URL = f"https://graph.facebook.com/"
 
@@ -12,7 +13,7 @@ def get_posts():
         try:
             r = requests.get(url)
             response = r.json()
-            print(response)
+            # print(response)
             if r.status_code == 200:
                 return response["data"]
         except requests.exceptions.RequestException as e:

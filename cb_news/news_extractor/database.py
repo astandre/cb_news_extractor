@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
+from sqlalchemy import desc
 
 from cb_news.news_extractor.utils import find_urls, clean_input, find_tag
 
@@ -10,12 +11,12 @@ class Noticia(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.String(80), nullable=False)
     message = db.Column(db.String(400), nullable=False)
-    fb_url = db.Column(db.Text, unique=True, nullable=False)
+    # fb_url = db.Column(db.Text, unique=True, nullable=False)
     full_picture = db.Column(db.Text, unique=True, nullable=True)
     shares = db.Column(db.Integer, nullable=True, default=0)
     extracted_time = db.Column(db.DateTime, default=datetime.now())
     todays_story = db.Column(db.Boolean, default=False)
-    internal_url = db.Column(db.Text, unique=True, nullable=True)
+    permalink_url = db.Column(db.Text, nullable=True)
     # noticia_tipo = db.Column(db.String(50), nullable=False)
     # This fields need approval
     reactions = db.Column(db.String(80), nullable=True)
@@ -109,8 +110,8 @@ def get_all_saved_news():
         result.append({
             "post_id": noticia.post_id,
             "message": noticia.message,
-            "fb_url": noticia.fb_url,
-            "internal_url": noticia.internal_url,
+            # "fb_url": noticia.fb_url,
+            "permalink_url": noticia.permalink_url,
             "full_picture": noticia.full_picture,
             "shares": noticia.shares,
             "extracted_time": noticia.extracted_time
@@ -121,14 +122,14 @@ def get_all_saved_news():
 def get_today_news_db():
     todays_datetime = datetime.today() - timedelta(days=1)
     noticias = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
-        Noticia.extracted_time).filter_by(todays_story=False).limit(5).all()
+        Noticia.extracted_time).filter_by(todays_story=False).limit(3).all()
     result = []
     for noticia in noticias:
         result.append({
             "post_id": noticia.post_id,
             "message": noticia.message,
-            "fb_url": noticia.fb_url,
-            "internal_url": noticia.internal_url,
+            # "fb_url": noticia.fb_url,
+            "permalink_url": noticia.permalink_url,
             "full_picture": noticia.full_picture,
             "shares": noticia.shares,
             "extracted_time": noticia.extracted_time
@@ -136,16 +137,36 @@ def get_today_news_db():
     return result
 
 
+def get_top_news_db():
+    todays_datetime = datetime.today() - timedelta(days=1)
+    noticias = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
+        desc(Noticia.shares))
+    t_story = None
+    for noticia in noticias:
+        # print(noticia.message, noticia.shares)
+        t_story = {
+            "post_id": noticia.post_id,
+            "message": noticia.message,
+            # "fb_url": t_story.fb_url,
+            "permalink_url": noticia.permalink_url,
+            "full_picture": noticia.full_picture,
+            "shares": noticia.shares,
+            "extracted_time": noticia.extracted_time
+        }
+        break
+    return t_story
+
+
 def get_todays_story():
     todays_datetime = datetime.today() - timedelta(days=1)
     t_story = Noticia.query.filter(Noticia.extracted_time > todays_datetime).order_by(
-        Noticia.extracted_time).filter_by(todays_story=False).first()
+        Noticia.extracted_time).filter_by(todays_story=True).first()
     if t_story is not None:
         return {
             "post_id": t_story.post_id,
             "message": t_story.message,
-            "fb_url": t_story.fb_url,
-            "internal_url": t_story.internal_url,
+            # "fb_url": t_story.fb_url,
+            "permalink_url": t_story.permalink_url,
             "full_picture": t_story.full_picture,
             "shares": t_story.shares,
             "extracted_time": t_story.extracted_time
